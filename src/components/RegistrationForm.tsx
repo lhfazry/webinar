@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Loader2, CheckCircle2 } from "lucide-react";
 import { DataService } from "../lib/data";
+import { sendConfirmationEmail } from "../lib/email";
 import type { RegistrationInput } from "../types";
 
 export function RegistrationForm() {
@@ -21,6 +22,16 @@ export function RegistrationForm() {
 
         try {
             await DataService.addRegistration(formData);
+
+            // Send confirmation email (fire and forget or await doesn't matter much here,
+            // but we'll await to ensure it fires before unmount if any)
+            try {
+                await sendConfirmationEmail(formData.email, formData.fullName);
+            } catch (emailError) {
+                console.error("Failed to send email silently:", emailError);
+                // Don't fail the registration if email fails
+            }
+
             setIsSuccess(true);
         } catch (error) {
             console.error("Registration failed:", error);
