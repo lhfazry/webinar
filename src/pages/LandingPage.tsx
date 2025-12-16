@@ -104,7 +104,7 @@ export default function LandingPage() {
                                     Date
                                 </p>
                                 <p className="text-sm font-semibold text-white">
-                                    Friday, 19 Dec 2025
+                                    Monday, 22 Dec 2025
                                 </p>
                             </div>
                         </div>
