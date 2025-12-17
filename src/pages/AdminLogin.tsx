@@ -9,7 +9,7 @@ export default function AdminLogin() {
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
-        if (password === "admin123") {
+        if (password === "1ZCm>r3jDK7x") {
             // Simple demo auth
             localStorage.setItem("admin_auth", "true");
             navigate("/admin");
