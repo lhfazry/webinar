@@ -127,7 +127,7 @@ serve(async (req) => {
             body: JSON.stringify({
                 from: {
                     email: senderEmail,
-                    name: "Rumah Coding Webinar"
+                    name: "Rumah Coding"
                 },
                 to: [
                     {

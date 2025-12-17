@@ -62,6 +62,48 @@ export default function LandingPage() {
                         ))}
                     </div>
 
+                    <div className="flex flex-col md:flex-row items-start md:items-center gap-6 bg-white/10 p-4 rounded-xl backdrop-blur-sm border border-white/10 mb-10 w-fit">
+                        <div className="flex items-center">
+                            <Calendar className="w-5 h-5 mr-3 text-secondary-500" />
+                            <div>
+                                <p className="text-xs text-blue-200 font-medium">
+                                    Date
+                                </p>
+                                <p className="text-sm font-semibold text-white">
+                                    Monday, 22 Dec 2025
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="hidden md:block w-px h-8 bg-white/20"></div>
+
+                        <div className="flex items-center">
+                            <Clock className="w-5 h-5 mr-3 text-secondary-500" />
+                            <div>
+                                <p className="text-xs text-blue-200 font-medium">
+                                    Time
+                                </p>
+                                <p className="text-sm font-semibold text-white">
+                                    20:00 - 21:30
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="hidden md:block w-px h-8 bg-white/20"></div>
+
+                        <div className="flex items-center">
+                            <MapPin className="w-5 h-5 mr-3 text-secondary-500" />
+                            <div>
+                                <p className="text-xs text-blue-200 font-medium">
+                                    Location
+                                </p>
+                                <p className="text-sm font-semibold text-white">
+                                    Online via Google Meet
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="flex items-center space-x-4 mb-10 bg-white/5 p-4 rounded-xl border border-white/10 backdrop-blur-sm w-fit">
                         <img
                             src="/assets/speaker.webp"
@@ -92,44 +134,6 @@ export default function LandingPage() {
                                 >
                                     <Facebook className="w-4 h-4" />
                                 </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex flex-wrap gap-4">
-                        <div className="flex items-center bg-white/10 px-4 py-2.5 rounded-xl backdrop-blur-sm border border-white/10">
-                            <Calendar className="w-5 h-5 mr-3 text-secondary-500" />
-                            <div>
-                                <p className="text-xs text-blue-200 font-medium">
-                                    Date
-                                </p>
-                                <p className="text-sm font-semibold text-white">
-                                    Monday, 22 Dec 2025
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center bg-white/10 px-4 py-2.5 rounded-xl backdrop-blur-sm border border-white/10">
-                            <Clock className="w-5 h-5 mr-3 text-secondary-500" />
-                            <div>
-                                <p className="text-xs text-blue-200 font-medium">
-                                    Time
-                                </p>
-                                <p className="text-sm font-semibold text-white">
-                                    20:00 - 21:30
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center bg-white/10 px-4 py-2.5 rounded-xl backdrop-blur-sm border border-white/10">
-                            <MapPin className="w-5 h-5 mr-3 text-secondary-500" />
-                            <div>
-                                <p className="text-xs text-blue-200 font-medium">
-                                    Location
-                                </p>
-                                <p className="text-sm font-semibold text-white">
-                                    Online via Google Meet
-                                </p>
                             </div>
                         </div>
                     </div>
