@@ -6,7 +6,6 @@ import {
     Search,
     Trash2,
     LogOut,
-    TrendingUp,
     Filter,
     Mail,
     ChevronLeft,
@@ -26,6 +25,7 @@ export default function AdminDashboard() {
     const [filterReferral, setFilterReferral] = useState<
         ReferralSource | "All"
     >("All");
+    const [filterRole, setFilterRole] = useState<string>("All");
     const [processingEmailId, setProcessingEmailId] = useState<string | null>(
         null
     );
@@ -62,11 +62,11 @@ export default function AdminDashboard() {
     // Reset pagination when filter changes
     useEffect(() => {
         setCurrentPage(1);
-    }, [filterReferral]);
+    }, [filterReferral, filterRole]);
 
     useEffect(() => {
         loadData();
-    }, [currentPage, debouncedSearchTerm, filterReferral]);
+    }, [currentPage, debouncedSearchTerm, filterReferral, filterRole]);
 
     const loadData = async () => {
         // Parallel data fetching for efficiency
@@ -75,7 +75,8 @@ export default function AdminDashboard() {
                 currentPage,
                 itemsPerPage,
                 debouncedSearchTerm,
-                filterReferral
+                filterReferral,
+                filterRole
             ),
             DataService.getStatistics(),
         ]);
@@ -122,7 +123,8 @@ export default function AdminDashboard() {
             1,
             10000, // Large limit to get all
             debouncedSearchTerm,
-            filterReferral
+            filterReferral,
+            filterRole
         );
 
         const headers = [
@@ -179,16 +181,6 @@ export default function AdminDashboard() {
         }
     };
 
-    const getTopReferral = () => {
-        // Note: This only calculates based on the current page's data
-        if (registrations.length === 0) return "N/A";
-        const counts: Record<string, number> = {};
-        registrations.forEach((r) => {
-            counts[r.referralSource] = (counts[r.referralSource] || 0) + 1;
-        });
-        return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
-    };
-
     const totalPages = Math.ceil(totalItems / itemsPerPage);
 
     return (
@@ -216,7 +208,7 @@ export default function AdminDashboard() {
 
             <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
                 {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex items-center col-span-1">
                         <div className="p-3 rounded-full bg-blue-50 text-blue-600 mr-4">
                             <Users className="w-8 h-8" />
@@ -227,23 +219,6 @@ export default function AdminDashboard() {
                             </p>
                             <p className="text-3xl font-bold text-gray-900">
                                 {totalItems}
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex items-center col-span-1">
-                        <div className="p-3 rounded-full bg-purple-50 text-purple-600 mr-4">
-                            <TrendingUp className="w-8 h-8" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-gray-500">
-                                Top Referral Source
-                            </p>
-                            <p className="text-3xl font-bold text-gray-900">
-                                {getTopReferral()}
-                            </p>
-                            <p className="text-xs text-gray-400">
-                                (Current Page)
                             </p>
                         </div>
                     </div>
@@ -329,6 +304,24 @@ export default function AdminDashboard() {
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
+                        </div>
+
+                        <div className="relative">
+                            <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                            <select
+                                className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none appearance-none bg-white w-full sm:w-48"
+                                value={filterRole}
+                                onChange={(e) => setFilterRole(e.target.value)}
+                            >
+                                <option value="All">All Roles</option>
+                                {Object.keys(statistics.jobTitles)
+                                    .sort()
+                                    .map((role) => (
+                                        <option key={role} value={role}>
+                                            {role}
+                                        </option>
+                                    ))}
+                            </select>
                         </div>
 
                         <div className="relative">

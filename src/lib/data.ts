@@ -9,7 +9,8 @@ export const DataService = {
         page: number = 1,
         limit: number = 10,
         search: string = "",
-        filter: string = "All"
+        filter: string = "All",
+        roleFilter: string = "All"
     ): Promise<{ data: Registration[]; count: number }> => {
         const from = (page - 1) * limit;
         const to = from + limit - 1;
@@ -29,6 +30,10 @@ export const DataService = {
 
             if (filter !== "All") {
                 query = query.eq("referral_source", filter);
+            }
+
+            if (roleFilter !== "All") {
+                query = query.eq("job_title", roleFilter);
             }
 
             const { data, error, count } = await query;
@@ -70,6 +75,12 @@ export const DataService = {
         if (filter !== "All") {
             registrations = registrations.filter(
                 (r) => r.referralSource === filter
+            );
+        }
+
+        if (roleFilter !== "All") {
+            registrations = registrations.filter(
+                (r) => r.jobTitle === roleFilter
             );
         }
 
