@@ -11,6 +11,8 @@ import {
     Mail,
     ChevronLeft,
     ChevronRight,
+    RefreshCw,
+    CheckCircle,
 } from "lucide-react";
 import { DataService } from "../lib/data";
 import { sendConfirmationEmail } from "../lib/email";
@@ -27,6 +29,7 @@ export default function AdminDashboard() {
     const [processingEmailId, setProcessingEmailId] = useState<string | null>(
         null
     );
+    const [isSyncing, setIsSyncing] = useState(false);
 
     // Pagination State
     const [currentPage, setCurrentPage] = useState(1);
@@ -155,6 +158,25 @@ export default function AdminDashboard() {
             new Date().toISOString().split("T")[0]
         }.csv`;
         link.click();
+    };
+
+    const handleSync = async () => {
+        setIsSyncing(true);
+        try {
+            const result = await DataService.syncGoogleContacts();
+            if (result.error) {
+                alert(`Error syncing contacts: ${result.error}`);
+            } else {
+                alert(result.message || "Sync completed successfully");
+                // Reload data to reflect any changes if needed (e.g. if we add a synced indicator later)
+                await loadData();
+            }
+        } catch (error) {
+            console.error(error);
+            alert("An unexpected error occurred during sync");
+        } finally {
+            setIsSyncing(false);
+        }
     };
 
     const getTopReferral = () => {
@@ -335,13 +357,29 @@ export default function AdminDashboard() {
                         </div>
                     </div>
 
-                    <button
-                        onClick={handleExport}
-                        className="flex items-center px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors w-full sm:w-auto justify-center"
-                    >
-                        <Download className="w-4 h-4 mr-2" />
-                        Export CSV
-                    </button>
+                    <div className="flex space-x-2 w-full sm:w-auto">
+                        <button
+                            onClick={handleSync}
+                            disabled={isSyncing}
+                            className={`flex items-center px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors w-full sm:w-auto justify-center ${
+                                isSyncing ? "opacity-50 cursor-not-allowed" : ""
+                            }`}
+                        >
+                            <RefreshCw
+                                className={`w-4 h-4 mr-2 ${
+                                    isSyncing ? "animate-spin" : ""
+                                }`}
+                            />
+                            {isSyncing ? "Syncing..." : "Sync Contacts"}
+                        </button>
+                        <button
+                            onClick={handleExport}
+                            className="flex items-center px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors w-full sm:w-auto justify-center"
+                        >
+                            <Download className="w-4 h-4 mr-2" />
+                            Export CSV
+                        </button>
+                    </div>
                 </div>
 
                 {/* Data Table */}
@@ -367,14 +405,21 @@ export default function AdminDashboard() {
                                             className="hover:bg-gray-50 transition-colors"
                                         >
                                             <td className="px-6 py-4">
-                                                <p className="font-semibold text-gray-900">
-                                                    {reg.fullName}
-                                                </p>
+                                                <div className="flex items-center space-x-2">
+                                                    <p className="font-semibold text-gray-900">
+                                                        {reg.fullName}
+                                                    </p>
+                                                    {reg.hasBeenAddedToGoogleContact && (
+                                                        <span title="Synced to Google Contacts">
+                                                            <CheckCircle className="w-4 h-4 text-green-500" />
+                                                        </span>
+                                                    )}
+                                                </div>
                                                 <span className="text-xs text-gray-400">
                                                     Registered{" "}
                                                     {new Date(
                                                         reg.createdAt
-                                                    ).toLocaleDateString()}
+                                                    ).toLocaleString()}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4">

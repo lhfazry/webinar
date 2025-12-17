@@ -15,6 +15,7 @@ export interface Registration {
     institution: string;
     referralSource: ReferralSource;
     createdAt: string;
+    hasBeenAddedToGoogleContact?: boolean;
 }
 
 export type RegistrationInput = Omit<Registration, 'id' | 'createdAt'>;

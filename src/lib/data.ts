@@ -48,6 +48,7 @@ export const DataService = {
                     institution: item.institution,
                     referralSource: item.referral_source,
                     createdAt: item.created_at,
+                    hasBeenAddedToGoogleContact: item.has_been_added_to_google_contact,
                 })),
                 count: count || 0,
             };
@@ -178,5 +179,19 @@ export const DataService = {
         });
 
         return { jobTitles, referralSources };
+    },
+
+    syncGoogleContacts: async (): Promise<{ message?: string; error?: string }> => {
+        if (supabase) {
+            const { data, error } = await supabase.functions.invoke(
+                "add-google-contact"
+            );
+            if (error) {
+                console.error("Error syncing contacts:", error);
+                return { error: error.message };
+            }
+            return data;
+        }
+        return { error: "Supabase client not initialized" };
     },
 };
