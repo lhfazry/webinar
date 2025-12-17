@@ -10,6 +10,18 @@ serve(async (req) => {
         return new Response("ok", { headers: corsHeaders });
     }
 
+    // Manual Authentication Check
+    // We expect the client to send "Bearer <SUPABASE_ANON_KEY>"
+    const authHeader = req.headers.get("Authorization");
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+
+    if (!authHeader || (anonKey && !authHeader.includes(anonKey))) {
+        return new Response(
+            JSON.stringify({ error: "Unauthorized" }),
+            { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+    }
+
     try {
         const { email, name } = await req.json();
         const token = Deno.env.get("MAILTRAP_API_TOKEN");

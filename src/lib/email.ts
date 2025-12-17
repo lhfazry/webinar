@@ -1,9 +1,9 @@
 import { supabase } from "./supabase";
 
-export const sendConfirmationEmail = async (to: string, name: string) => {
+export const sendConfirmationEmail = async (to: string, name: string): Promise<boolean> => {
     if (!supabase) {
         console.error("Supabase client is not initialized.");
-        return;
+        return false;
     }
 
     try {
@@ -13,11 +13,13 @@ export const sendConfirmationEmail = async (to: string, name: string) => {
 
         if (error) {
             console.error("Error invoking send-confirmation-email function:", error);
-            return;
+            return false;
         }
 
         console.log("Email sent successfully via Edge Function:", data);
+        return true;
     } catch (error) {
         console.error("Error sending email:", error);
+        return false;
     }
 };

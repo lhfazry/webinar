@@ -8,17 +8,35 @@ import {
     LogOut,
     TrendingUp,
     Filter,
+    Mail,
+    ChevronLeft,
+    ChevronRight,
 } from "lucide-react";
 import { DataService } from "../lib/data";
+import { sendConfirmationEmail } from "../lib/email";
 import type { Registration, ReferralSource } from "../types";
 
 export default function AdminDashboard() {
     const navigate = useNavigate();
     const [registrations, setRegistrations] = useState<Registration[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
     const [filterReferral, setFilterReferral] = useState<
         ReferralSource | "All"
     >("All");
+    const [processingEmailId, setProcessingEmailId] = useState<string | null>(
+        null
+    );
+
+    // Pagination State
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalItems, setTotalItems] = useState(0);
+    const itemsPerPage = 10;
+
+    const [statistics, setStatistics] = useState<{
+        jobTitles: Record<string, number>;
+        referralSources: Record<string, number>;
+    }>({ jobTitles: {}, referralSources: {} });
 
     useEffect(() => {
         // Check auth
@@ -26,12 +44,42 @@ export default function AdminDashboard() {
             navigate("/admin/login");
             return;
         }
-        loadData();
     }, [navigate]);
 
+    // Debounce Search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearchTerm(searchTerm);
+            setCurrentPage(1); // Reset to page 1 on search change
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
+
+    // Reset pagination when filter changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filterReferral]);
+
+    useEffect(() => {
+        loadData();
+    }, [currentPage, debouncedSearchTerm, filterReferral]);
+
     const loadData = async () => {
-        const data = await DataService.getRegistrations();
-        setRegistrations(data);
+        // Parallel data fetching for efficiency
+        const [registrationsResponse, statsResponse] = await Promise.all([
+            DataService.getRegistrations(
+                currentPage,
+                itemsPerPage,
+                debouncedSearchTerm,
+                filterReferral
+            ),
+            DataService.getStatistics(),
+        ]);
+
+        setRegistrations(registrationsResponse.data);
+        setTotalItems(registrationsResponse.count);
+        setStatistics(statsResponse);
     };
 
     const handleLogout = () => {
@@ -46,8 +94,34 @@ export default function AdminDashboard() {
         }
     };
 
-    const handleExport = () => {
-        // Simple CSV Export
+    const handleResendEmail = async (reg: Registration) => {
+        if (confirm(`Resend confirmation email to ${reg.fullName}?`)) {
+            setProcessingEmailId(reg.id);
+            const success = await sendConfirmationEmail(
+                reg.email,
+                reg.fullName
+            );
+            setProcessingEmailId(null);
+
+            if (success) {
+                alert(`Email successfully sent to ${reg.email}`);
+            } else {
+                alert(
+                    `Failed to send email to ${reg.email}. Check console for details.`
+                );
+            }
+        }
+    };
+
+    const handleExport = async () => {
+        // Export all data matching current filters
+        const { data: allData } = await DataService.getRegistrations(
+            1,
+            10000, // Large limit to get all
+            debouncedSearchTerm,
+            filterReferral
+        );
+
         const headers = [
             "Full Name",
             "Email",
@@ -59,7 +133,7 @@ export default function AdminDashboard() {
         ];
         const csvContent = [
             headers.join(","),
-            ...registrations.map((r) =>
+            ...allData.map((r) =>
                 [
                     `"${r.fullName}"`,
                     `"${r.email}"`,
@@ -83,17 +157,8 @@ export default function AdminDashboard() {
         link.click();
     };
 
-    // Derived State
-    const filteredRegistrations = registrations.filter((r) => {
-        const matchesSearch =
-            r.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            r.email.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesFilter =
-            filterReferral === "All" || r.referralSource === filterReferral;
-        return matchesSearch && matchesFilter;
-    });
-
     const getTopReferral = () => {
+        // Note: This only calculates based on the current page's data
         if (registrations.length === 0) return "N/A";
         const counts: Record<string, number> = {};
         registrations.forEach((r) => {
@@ -101,6 +166,8 @@ export default function AdminDashboard() {
         });
         return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
     };
+
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -127,8 +194,8 @@ export default function AdminDashboard() {
 
             <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
                 {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex items-center">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex items-center col-span-1">
                         <div className="p-3 rounded-full bg-blue-50 text-blue-600 mr-4">
                             <Users className="w-8 h-8" />
                         </div>
@@ -137,12 +204,12 @@ export default function AdminDashboard() {
                                 Total Registrants
                             </p>
                             <p className="text-3xl font-bold text-gray-900">
-                                {registrations.length}
+                                {totalItems}
                             </p>
                         </div>
                     </div>
 
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex items-center">
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex items-center col-span-1">
                         <div className="p-3 rounded-full bg-purple-50 text-purple-600 mr-4">
                             <TrendingUp className="w-8 h-8" />
                         </div>
@@ -153,6 +220,77 @@ export default function AdminDashboard() {
                             <p className="text-3xl font-bold text-gray-900">
                                 {getTopReferral()}
                             </p>
+                            <p className="text-xs text-gray-400">
+                                (Current Page)
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 col-span-1">
+                        <h3 className="text-sm font-medium text-gray-500 mb-4">
+                            Job Title Distribution
+                        </h3>
+                        <div className="space-y-3">
+                            {Object.entries(statistics.jobTitles)
+                                .sort((a, b) => b[1] - a[1])
+                                .slice(0, 3)
+                                .map(([title, count]) => (
+                                    <div key={title} className="text-sm">
+                                        <div className="flex justify-between mb-1">
+                                            <span className="text-gray-700 truncate w-32">
+                                                {title}
+                                            </span>
+                                            <span className="font-medium text-gray-900">
+                                                {count}
+                                            </span>
+                                        </div>
+                                        <div className="w-full bg-gray-100 rounded-full h-1.5">
+                                            <div
+                                                className="bg-green-500 h-1.5 rounded-full"
+                                                style={{
+                                                    width: `${
+                                                        (count / totalItems) *
+                                                        100
+                                                    }%`,
+                                                }}
+                                            ></div>
+                                        </div>
+                                    </div>
+                                ))}
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 col-span-1">
+                        <h3 className="text-sm font-medium text-gray-500 mb-4">
+                            Referral Sources
+                        </h3>
+                        <div className="space-y-3">
+                            {Object.entries(statistics.referralSources)
+                                .sort((a, b) => b[1] - a[1])
+                                .slice(0, 3)
+                                .map(([source, count]) => (
+                                    <div key={source} className="text-sm">
+                                        <div className="flex justify-between mb-1">
+                                            <span className="text-gray-700 truncate w-32">
+                                                {source}
+                                            </span>
+                                            <span className="font-medium text-gray-900">
+                                                {count}
+                                            </span>
+                                        </div>
+                                        <div className="w-full bg-gray-100 rounded-full h-1.5">
+                                            <div
+                                                className="bg-orange-500 h-1.5 rounded-full"
+                                                style={{
+                                                    width: `${
+                                                        (count / totalItems) *
+                                                        100
+                                                    }%`,
+                                                }}
+                                            ></div>
+                                        </div>
+                                    </div>
+                                ))}
                         </div>
                     </div>
                 </div>
@@ -222,8 +360,8 @@ export default function AdminDashboard() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
-                                {filteredRegistrations.length > 0 ? (
-                                    filteredRegistrations.map((reg) => (
+                                {registrations.length > 0 ? (
+                                    registrations.map((reg) => (
                                         <tr
                                             key={reg.id}
                                             className="hover:bg-gray-50 transition-colors"
@@ -265,15 +403,44 @@ export default function AdminDashboard() {
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 text-right">
-                                                <button
-                                                    onClick={() =>
-                                                        handleDelete(reg.id)
-                                                    }
-                                                    className="text-gray-400 hover:text-red-600 transition-colors p-1 rounded-md hover:bg-red-50"
-                                                    title="Delete Registration"
-                                                >
-                                                    <Trash2 className="w-5 h-5" />
-                                                </button>
+                                                <div className="flex items-center justify-end space-x-2">
+                                                    <button
+                                                        onClick={() =>
+                                                            handleResendEmail(
+                                                                reg
+                                                            )
+                                                        }
+                                                        disabled={
+                                                            processingEmailId ===
+                                                            reg.id
+                                                        }
+                                                        className={`text-gray-400 hover:text-blue-600 transition-colors p-1 rounded-md hover:bg-blue-50 ${
+                                                            processingEmailId ===
+                                                            reg.id
+                                                                ? "opacity-50 cursor-not-allowed"
+                                                                : ""
+                                                        }`}
+                                                        title="Resend Confirmation Email"
+                                                    >
+                                                        <Mail
+                                                            className={`w-5 h-5 ${
+                                                                processingEmailId ===
+                                                                reg.id
+                                                                    ? "animate-pulse"
+                                                                    : ""
+                                                            }`}
+                                                        />
+                                                    </button>
+                                                    <button
+                                                        onClick={() =>
+                                                            handleDelete(reg.id)
+                                                        }
+                                                        className="text-gray-400 hover:text-red-600 transition-colors p-1 rounded-md hover:bg-red-50"
+                                                        title="Delete Registration"
+                                                    >
+                                                        <Trash2 className="w-5 h-5" />
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))
@@ -299,11 +466,65 @@ export default function AdminDashboard() {
                             </tbody>
                         </table>
                     </div>
-                    <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 text-xs text-gray-500 flex justify-between">
-                        <span>
-                            Showing {filteredRegistrations.length} of{" "}
-                            {registrations.length} entries
-                        </span>
+                    {/* Pagination Controls */}
+                    <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+                        <div className="text-sm text-gray-500">
+                            Showing{" "}
+                            <span className="font-medium">
+                                {Math.min(
+                                    (currentPage - 1) * itemsPerPage + 1,
+                                    totalItems
+                                )}
+                            </span>{" "}
+                            to{" "}
+                            <span className="font-medium">
+                                {Math.min(
+                                    currentPage * itemsPerPage,
+                                    totalItems
+                                )}
+                            </span>{" "}
+                            of <span className="font-medium">{totalItems}</span>{" "}
+                            results
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <button
+                                onClick={() =>
+                                    setCurrentPage((p) => Math.max(1, p - 1))
+                                }
+                                disabled={currentPage === 1}
+                                className={`p-2 rounded-md border border-gray-300 text-gray-600 bg-white hover:bg-gray-50 transition-colors ${
+                                    currentPage === 1
+                                        ? "opacity-50 cursor-not-allowed"
+                                        : ""
+                                }`}
+                                aria-label="Previous Page"
+                            >
+                                <ChevronLeft className="w-4 h-4" />
+                            </button>
+                            <span className="text-sm text-gray-700 font-medium">
+                                Page {currentPage} of {totalPages || 1}
+                            </span>
+                            <button
+                                onClick={() =>
+                                    setCurrentPage((p) =>
+                                        Math.min(totalPages, p + 1)
+                                    )
+                                }
+                                disabled={
+                                    currentPage === totalPages ||
+                                    totalPages === 0
+                                }
+                                className={`p-2 rounded-md border border-gray-300 text-gray-600 bg-white hover:bg-gray-50 transition-colors ${
+                                    currentPage === totalPages ||
+                                    totalPages === 0
+                                        ? "opacity-50 cursor-not-allowed"
+                                        : ""
+                                }`}
+                                aria-label="Next Page"
+                            >
+                                <ChevronRight className="w-4 h-4" />
+                            </button>
+                        </div>
                     </div>
                 </div>
             </main>
