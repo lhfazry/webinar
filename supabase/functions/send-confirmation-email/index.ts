@@ -22,7 +22,7 @@ serve(async (req) => {
         const webinarDetails = {
             title: "ViT vs CNN: The Clash of Architectures",
             date: "Monday, 22 Dec 2025",
-            time: "20:00 - 21:30 WIB",
+            time: "20:00 - 22:00 WIB",
             location: "Online via Google Meet",
             speaker: "Lhuqita Fazry",
             whatsappLink: "https://chat.whatsapp.com/D5RFqx605NHD1DISRGDgNs"

@@ -85,7 +85,7 @@ export default function LandingPage() {
                                     Time
                                 </p>
                                 <p className="text-sm font-semibold text-white">
-                                    20:00 - 21:30
+                                    20:00 - 22:00
                                 </p>
                             </div>
                         </div>
