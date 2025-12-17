@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Loader2, CheckCircle2 } from "lucide-react";
 import { DataService } from "../lib/data";
 import { sendConfirmationEmail } from "../lib/email";
+import { trackEvent } from "../lib/analytics";
 import type { RegistrationInput } from "../types";
 
 export function RegistrationForm() {
@@ -33,6 +34,11 @@ export function RegistrationForm() {
             }
 
             setIsSuccess(true);
+            trackEvent("generate_lead", {
+                category: "Registration",
+                label: formData.jobTitle,
+                value: 1,
+            });
         } catch (error) {
             console.error("Registration failed:", error);
             alert("Registration failed. Please try again.");

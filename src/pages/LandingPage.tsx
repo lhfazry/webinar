@@ -7,6 +7,7 @@ import {
     Facebook,
 } from "lucide-react";
 import { RegistrationForm } from "../components/RegistrationForm";
+import { trackEvent } from "../lib/analytics";
 
 export default function LandingPage() {
     return (
@@ -123,6 +124,12 @@ export default function LandingPage() {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="text-gray-400 hover:text-blue-400 transition-colors"
+                                    onClick={() =>
+                                        trackEvent("social_click", {
+                                            category: "Social",
+                                            label: "LinkedIn",
+                                        })
+                                    }
                                 >
                                     <Linkedin className="w-4 h-4" />
                                 </a>
@@ -131,6 +138,12 @@ export default function LandingPage() {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="text-gray-400 hover:text-blue-600 transition-colors"
+                                    onClick={() =>
+                                        trackEvent("social_click", {
+                                            category: "Social",
+                                            label: "Facebook",
+                                        })
+                                    }
                                 >
                                     <Facebook className="w-4 h-4" />
                                 </a>
