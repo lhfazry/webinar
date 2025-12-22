@@ -33,11 +33,8 @@ serve(async (req) => {
 
         const webinarDetails = {
             title: "ViT vs CNN: The Clash of Architectures",
-            date: "Monday, 22 Dec 2025",
-            time: "20:00 - 22:00 WIB",
-            location: "Online via Google Meet",
             speaker: "Lhuqita Fazry",
-            whatsappLink: "https://chat.whatsapp.com/D5RFqx605NHD1DISRGDgNs"
+            whatsappLink: "https://chat.whatsapp.com/D5RFqx605NHD1DISRGDgNs",
         };
 
         const htmlContent = `
@@ -46,7 +43,7 @@ serve(async (req) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Webinar Registration Confirmed</title>
+        <title>You're on the waitlist!</title>
         <style>
             body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f3f4f6; color: #1f2937; line-height: 1.6; }
             .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-top: 40px; margin-bottom: 40px; }
@@ -70,45 +67,17 @@ serve(async (req) => {
     <body>
         <div class="container">
             <div class="header">
-                <h1>Registration Confirmed!</h1>
-                <p>You're all set for the Technical Webinar Series</p>
+                <h1>You're on the list!</h1>
+                <p>We've added you to the waitlist for our next event</p>
             </div>
             
             <div class="content">
                 <p class="greeting">Hi ${name},</p>
-                <p>Thank you for registering. We are excited to have you join us for this deep dive into modern Computer Vision architectures.</p>
-                
-                <div class="card">
-                    <div class="card-title">Webinar Details</div>
-                    
-                    <div class="detail-row">
-                        <div class="detail-label">Topic</div>
-                        <div class="detail-value">${webinarDetails.title}</div>
-                    </div>
-                    
-                    <div class="detail-row">
-                        <div class="detail-label">Date</div>
-                        <div class="detail-value">${webinarDetails.date}</div>
-                    </div>
-                    
-                    <div class="detail-row">
-                        <div class="detail-label">Time</div>
-                        <div class="detail-value">${webinarDetails.time}</div>
-                    </div>
-                    
-                    <div class="detail-row">
-                        <div class="detail-label">Speaker</div>
-                        <div class="detail-value">${webinarDetails.speaker}</div>
-                    </div>
-                    
-                    <div class="detail-row">
-                        <div class="detail-label">Location</div>
-                        <div class="detail-value">${webinarDetails.location}</div>
-                    </div>
-                </div>
+                <p>Thanks for your interest in "<strong>${webinarDetails.title}</strong>". The live session has concluded, but don't worry—we've added you to our priority notification list.</p>
+                <p>You will be the first to know when we announce our next technical deep dive or if we release recording materials.</p>
                 
                 <p style="text-align: center; margin-bottom: 16px; color: #4b5563;">
-                    While waiting for the event, please join our community for updates, materials, and discussion.
+                    In the meantime, join our community to discuss with other engineers and researchers.
                 </p>
                 
                 <div class="cta-section">
@@ -123,7 +92,7 @@ serve(async (req) => {
             
             <div class="footer">
                 <p>&copy; 2025 Rumah Coding. All rights reserved.</p>
-                <p>You received this email because you registered for our webinar.</p>
+                <p>You received this email because you signed up for the waitlist.</p>
             </div>
         </div>
     </body>
@@ -147,9 +116,9 @@ serve(async (req) => {
                         name: name
                     }
                 ],
-                subject: `Registration Confirmed: ${webinarDetails.title}`,
+                subject: `Waitlist Confirmed: ${webinarDetails.title}`,
                 html: htmlContent,
-                category: "Registration Confirmation"
+                category: "Waitlist Confirmation"
             })
         });
 

@@ -10,10 +10,16 @@ import { RegistrationForm } from "../components/RegistrationForm";
 import { trackEvent } from "../lib/analytics";
 
 export default function LandingPage() {
+    const isWebinarFinished = true;
+
     return (
         <div className="min-h-screen flex flex-col lg:flex-row bg-white">
             {/* Left Column: Content */}
-            <div className="flex-1 bg-gradient-to-br from-primary-900 to-primary-950 p-8 lg:p-16 flex flex-col justify-center text-white relative overflow-hidden">
+            <div
+                className={`flex-1 bg-gradient-to-br from-primary-900 to-primary-950 p-8 lg:p-16 flex flex-col justify-center text-white relative overflow-hidden ${
+                    isWebinarFinished ? "grayscale-0" : ""
+                }`}
+            >
                 {/* Abstract Background Shapes */}
                 <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10 pointer-events-none">
                     <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-purple-500 blur-3xl"></div>
@@ -31,6 +37,11 @@ export default function LandingPage() {
                         <div className="inline-block px-3 py-1 bg-white/10 rounded-full text-blue-200 text-sm font-medium backdrop-blur-sm border border-white/10">
                             Technical Webinar Series
                         </div>
+                        {isWebinarFinished && (
+                            <div className="inline-block px-3 py-1 bg-red-500/20 text-red-200 rounded-full text-sm font-medium border border-red-500/30">
+                                Event Finished
+                            </div>
+                        )}
                     </div>
 
                     <h1 className="text-4xl lg:text-6xl font-bold mb-4 leading-tight tracking-tight">
@@ -70,7 +81,7 @@ export default function LandingPage() {
                                 <p className="text-xs text-blue-200 font-medium">
                                     Date
                                 </p>
-                                <p className="text-sm font-semibold text-white">
+                                <p className="text-sm font-semibold text-white/70 line-through">
                                     Monday, 22 Dec 2025
                                 </p>
                             </div>
@@ -84,7 +95,7 @@ export default function LandingPage() {
                                 <p className="text-xs text-blue-200 font-medium">
                                     Time
                                 </p>
-                                <p className="text-sm font-semibold text-white">
+                                <p className="text-sm font-semibold text-white/70 line-through">
                                     20:00 - 22:00
                                 </p>
                             </div>
@@ -158,14 +169,18 @@ export default function LandingPage() {
                 <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-100 p-6 lg:p-8">
                     <div className="mb-8">
                         <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                            Reserve Your Seat
+                            {isWebinarFinished
+                                ? "Join Waitlist for Next Webinar"
+                                : "Reserve Your Seat"}
                         </h2>
                         <p className="text-gray-600">
-                            Limited spots available for this live session.
+                            {isWebinarFinished
+                                ? "This event has ended. Fill out the form below to get notified about our next technical deep dive."
+                                : "Limited spots available for this live session."}
                         </p>
                     </div>
 
-                    <RegistrationForm />
+                    <RegistrationForm isWaitlist={isWebinarFinished} />
                 </div>
             </div>
         </div>

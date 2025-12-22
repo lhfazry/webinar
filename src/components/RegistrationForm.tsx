@@ -5,7 +5,11 @@ import { sendConfirmationEmail } from "../lib/email";
 import { trackEvent } from "../lib/analytics";
 import type { RegistrationInput } from "../types";
 
-export function RegistrationForm() {
+export function RegistrationForm({
+    isWaitlist = false,
+}: {
+    isWaitlist?: boolean;
+}) {
     const [formData, setFormData] = useState<RegistrationInput>({
         fullName: "",
         email: "",
@@ -60,27 +64,34 @@ export function RegistrationForm() {
                     <CheckCircle2 className="w-10 h-10 text-green-600" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900">
-                    Registration Complete!
+                    {isWaitlist
+                        ? "You're on the list!"
+                        : "Registration Complete!"}
                 </h3>
                 <p className="text-gray-600">
-                    Thank you for registering. Please join our WhatsApp Group
-                    for updates and discussion.
+                    {isWaitlist
+                        ? "Thank you for joining the waitlist. We will notify you as soon as the next webinar is scheduled."
+                        : "Thank you for registering. Please join our WhatsApp Group for updates and discussion."}
                 </p>
 
-                <a
-                    href="https://chat.whatsapp.com/D5RFqx605NHD1DISRGDgNs"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full bg-green-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-600 transition-colors flex items-center justify-center space-x-2"
-                >
-                    <span>Join WhatsApp Group</span>
-                </a>
+                {!isWaitlist && (
+                    <a
+                        href="https://chat.whatsapp.com/D5RFqx605NHD1DISRGDgNs"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full bg-green-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-600 transition-colors flex items-center justify-center space-x-2"
+                    >
+                        <span>Join WhatsApp Group</span>
+                    </a>
+                )}
 
                 <button
                     onClick={() => setIsSuccess(false)}
                     className="text-primary-600 font-medium hover:text-primary-700 underline text-sm mt-4"
                 >
-                    Register another person
+                    {isWaitlist
+                        ? "Join for another person"
+                        : "Register another person"}
                 </button>
             </div>
         );
@@ -228,8 +239,10 @@ export function RegistrationForm() {
                 {isSubmitting ? (
                     <>
                         <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                        Registering...
+                        {isWaitlist ? "Joining Waitlist..." : "Registering..."}
                     </>
+                ) : isWaitlist ? (
+                    "Join Waitlist"
                 ) : (
                     "Secure Your Spot"
                 )}
