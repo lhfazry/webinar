@@ -170,12 +170,12 @@ export default function LandingPage() {
                     <div className="mb-8">
                         <h2 className="text-2xl font-bold text-gray-900 mb-2">
                             {isWebinarFinished
-                                ? "Join Waitlist for Next Webinar"
+                                ? "Watch Recording & Join Waitlist"
                                 : "Reserve Your Seat"}
                         </h2>
                         <p className="text-gray-600">
                             {isWebinarFinished
-                                ? "This event has ended. Fill out the form below to get notified about our next technical deep dive."
+                                ? "This event has ended. Register below to get the recording link via email and be notified about our next technical deep dive."
                                 : "Limited spots available for this live session."}
                         </p>
                     </div>

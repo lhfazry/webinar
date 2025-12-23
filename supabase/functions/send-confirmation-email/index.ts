@@ -35,6 +35,8 @@ serve(async (req) => {
             title: "ViT vs CNN: The Clash of Architectures",
             speaker: "Lhuqita Fazry",
             whatsappLink: "https://chat.whatsapp.com/D5RFqx605NHD1DISRGDgNs",
+            recordingLink: "https://youtu.be/qYBmiQ-TEWk",
+            materialLink: "https://github.com/lhfazry/vit-vs-cnn"
         };
 
         const htmlContent = `
@@ -43,7 +45,7 @@ serve(async (req) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>You're on the waitlist!</title>
+        <title>You're on the waitlist & Recording Access</title>
         <style>
             body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f3f4f6; color: #1f2937; line-height: 1.6; }
             .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-top: 40px; margin-bottom: 40px; }
@@ -67,17 +69,34 @@ serve(async (req) => {
     <body>
         <div class="container">
             <div class="header">
-                <h1>You're on the list!</h1>
-                <p>We've added you to the waitlist for our next event</p>
+                <h1>Recording Access & Waitlist</h1>
+                <p>Catch up on what you missed</p>
             </div>
             
             <div class="content">
                 <p class="greeting">Hi ${name},</p>
-                <p>Thanks for your interest in "<strong>${webinarDetails.title}</strong>". The live session has concluded, but don't worry—we've added you to our priority notification list.</p>
-                <p>You will be the first to know when we announce our next technical deep dive or if we release recording materials.</p>
+                <p>Thanks for your interest in "<strong>${webinarDetails.title}</strong>". The live session has concluded, but we have good news!</p>
+                <p>You can access the recording and materials here:</p>
+                
+                <div class="card">
+                     <div class="detail-row">
+                        <div class="detail-label">Recording</div>
+                        <div class="detail-value">
+                            <a href="${webinarDetails.recordingLink}" style="color: #4f46e5;">Watch on YouTube</a>
+                        </div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Materials</div>
+                        <div class="detail-value">
+                            <a href="${webinarDetails.materialLink}" style="color: #4f46e5;">Access on GitHub</a>
+                        </div>
+                    </div>
+                </div>
+
+                <p>We have also added you to our priority notification list for the next technical deep dive.</p>
                 
                 <p style="text-align: center; margin-bottom: 16px; color: #4b5563;">
-                    In the meantime, join our community to discuss with other engineers and researchers.
+                    Join our community to discuss the webinar materials with other engineers.
                 </p>
                 
                 <div class="cta-section">
@@ -92,7 +111,7 @@ serve(async (req) => {
             
             <div class="footer">
                 <p>&copy; 2025 Rumah Coding. All rights reserved.</p>
-                <p>You received this email because you signed up for the waitlist.</p>
+                <p>You received this email because you requested access to the webinar recording.</p>
             </div>
         </div>
     </body>
@@ -116,9 +135,9 @@ serve(async (req) => {
                         name: name
                     }
                 ],
-                subject: `Waitlist Confirmed: ${webinarDetails.title}`,
+                subject: `Recording Access: ${webinarDetails.title}`,
                 html: htmlContent,
-                category: "Waitlist Confirmation"
+                category: "Recording Access"
             })
         });
 
