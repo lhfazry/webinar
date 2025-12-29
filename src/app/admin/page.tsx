@@ -1,5 +1,7 @@
+"use client";
+
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import {
     Users,
     Download,
@@ -13,13 +15,12 @@ import {
     RefreshCw,
     CheckCircle,
 } from "lucide-react";
-import { useSEO } from "../hooks/useSEO";
-import { DataService } from "../lib/data";
-import { sendConfirmationEmail } from "../lib/email";
-import type { Registration, ReferralSource, Webinar } from "../types";
+import { DataService } from "@/lib/data";
+import { sendConfirmationEmail } from "@/lib/email";
+import type { Registration, ReferralSource, Webinar } from "@/types";
 
 export default function AdminDashboard() {
-    const navigate = useNavigate();
+    const router = useRouter();
     const [registrations, setRegistrations] = useState<Registration[]>([]);
     const [webinars, setWebinars] = useState<Webinar[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
@@ -43,19 +44,16 @@ export default function AdminDashboard() {
         jobTitles: Record<string, number>;
         referralSources: Record<string, number>;
     }>({ jobTitles: {}, referralSources: {} });
-
-    useSEO({
-        title: "Admin Dashboard | Rumah Coding",
-        description: "Admin panel for managing webinar registrations.",
-    });
+    const [isAuthChecking, setIsAuthChecking] = useState(true);
 
     useEffect(() => {
         // Check auth
         if (!localStorage.getItem("admin_auth")) {
-            navigate("/admin/login");
+            router.push("/admin/login");
             return;
         }
-    }, [navigate]);
+        setIsAuthChecking(false);
+    }, [router]);
 
     // Debounce Search
     useEffect(() => {
@@ -111,7 +109,7 @@ export default function AdminDashboard() {
 
     const handleLogout = () => {
         localStorage.removeItem("admin_auth");
-        navigate("/admin/login");
+        router.push("/admin/login");
     };
 
     const handleDelete = async (id: string) => {
@@ -206,6 +204,10 @@ export default function AdminDashboard() {
 
     const totalPages = Math.ceil(totalItems / itemsPerPage);
 
+    if (isAuthChecking) {
+        return null; // Or a simple loader
+    }
+
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
             {/* Header */}
@@ -221,7 +223,7 @@ export default function AdminDashboard() {
                     </div>
                     <div className="flex items-center space-x-4">
                         <button
-                            onClick={() => navigate("/admin/webinars")}
+                            onClick={() => router.push("/admin/webinars")}
                             className="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors"
                         >
                             Manage Webinars

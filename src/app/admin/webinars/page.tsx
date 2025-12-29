@@ -1,28 +1,27 @@
+"use client";
+
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { DataService } from "../lib/data";
-import type { Webinar } from "../types";
-import { useSEO } from "../hooks/useSEO";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { DataService } from "@/lib/data";
+import type { Webinar } from "@/types";
 import { Plus, Edit2, Trash2, ArrowLeft } from "lucide-react";
 
 export default function AdminWebinars() {
-    const navigate = useNavigate();
+    const router = useRouter();
     const [webinars, setWebinars] = useState<Webinar[]>([]);
     const [loading, setLoading] = useState(true);
-
-    useSEO({
-        title: "Manage Webinars | Rumah Coding",
-        description: "Admin panel for creating and managing webinars.",
-    });
+    const [isAuthChecking, setIsAuthChecking] = useState(true);
 
     useEffect(() => {
         // Check auth
         if (!localStorage.getItem("admin_auth")) {
-            navigate("/admin/login");
+            router.push("/admin/login");
             return;
         }
+        setIsAuthChecking(false);
         loadWebinars();
-    }, [navigate]);
+    }, [router]);
 
     const loadWebinars = async () => {
         const data = await DataService.getWebinars();
@@ -46,6 +45,10 @@ export default function AdminWebinars() {
         }
     };
 
+    if (isAuthChecking) {
+        return null;
+    }
+
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
             {/* Header */}
@@ -53,7 +56,7 @@ export default function AdminWebinars() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                         <Link
-                            to="/admin"
+                            href="/admin"
                             className="text-gray-500 hover:text-gray-900 mr-2"
                         >
                             <ArrowLeft className="w-5 h-5" />
@@ -74,7 +77,7 @@ export default function AdminWebinars() {
                         Webinar List
                     </h2>
                     <Link
-                        to="/admin/webinars/new"
+                        href="/admin/webinars/new"
                         className="flex items-center px-4 py-2 bg-primary-900 text-white rounded-lg text-sm font-medium hover:bg-primary-950 transition-colors"
                     >
                         <Plus className="w-4 h-4 mr-2" />
@@ -143,7 +146,7 @@ export default function AdminWebinars() {
                                                 <td className="px-6 py-4 text-right">
                                                     <div className="flex items-center justify-end space-x-2">
                                                         <Link
-                                                            to={`/admin/webinars/${webinar.id}`}
+                                                            href={`/admin/webinars/${webinar.id}`}
                                                             className="text-gray-400 hover:text-blue-600 transition-colors p-1 rounded-md hover:bg-blue-50"
                                                             title="Edit"
                                                         >

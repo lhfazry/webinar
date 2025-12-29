@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import { Loader2, CheckCircle2 } from "lucide-react";
 import { DataService } from "../lib/data";

@@ -1,41 +1,15 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { DataService } from "../lib/data";
-import type { Webinar } from "../types";
+import Link from "next/link";
+import { DataService } from "@/lib/data";
 import { Calendar, Clock, ArrowRight } from "lucide-react";
-import { useSEO } from "../hooks/useSEO";
 
-export default function WebinarList() {
-    const [webinars, setWebinars] = useState<Webinar[]>([]);
-    const [loading, setLoading] = useState(true);
+// Revalidate every hour
+export const revalidate = 3600;
 
-    useSEO({
-        title: "Technical Webinar Series | Rumah Coding",
-        description:
-            "Join our expert-led sessions on the latest technologies, architectures, and best practices in software engineering.",
-        url: window.location.href,
-        image: "/assets/card-placeholder.webp", // Fallback
-    });
-
-    useEffect(() => {
-        const loadWebinars = async () => {
-            const data = await DataService.getWebinars();
-            setWebinars(data);
-            setLoading(false);
-        };
-        loadWebinars();
-    }, []);
-
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-            </div>
-        );
-    }
+export default async function Home() {
+    const webinars = await DataService.getWebinars();
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 pb-20">
             {/* Hero Section */}
             <div className="bg-gradient-to-br from-primary-900 to-primary-950 text-white py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10 pointer-events-none">
@@ -65,7 +39,7 @@ export default function WebinarList() {
                     {webinars.map((webinar) => (
                         <Link
                             key={webinar.id}
-                            to={`/webinar/${webinar.slug}`}
+                            href={`/webinar/${webinar.slug}`}
                             className="group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col h-full ring-1 ring-gray-900/5"
                         >
                             <div className="relative h-56 overflow-hidden bg-gray-100">

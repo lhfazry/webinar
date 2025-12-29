@@ -12,7 +12,7 @@ export const sendConfirmationEmail = async (
     }
 
     // Debug logging to verify key presence (do not log the actual key in production)
-    console.log("Supabase Key Statuss:", !!import.meta.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY ? "Present" : "Missing");
+    console.log("Supabase Key Statuss:", !!process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY ? "Present" : "Missing");
 
     try {
         const { data, error } = await supabase.functions.invoke(

@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { DataService } from "@/lib/data";
+import { RegistrationForm } from "@/components/RegistrationForm";
+import { trackEvent } from "@/lib/analytics";
+import type { Webinar } from "@/types";
 import {
     Calendar,
     Clock,
@@ -10,62 +12,58 @@ import {
     ArrowLeft,
     Share2,
 } from "lucide-react";
-import { RegistrationForm } from "../components/RegistrationForm";
-import { trackEvent } from "../lib/analytics";
-import { DataService } from "../lib/data";
-import { useSEO } from "../hooks/useSEO";
-import type { Webinar } from "../types";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 
-export default function LandingPage() {
-    const { slug } = useParams<{ slug: string }>();
-    const [webinar, setWebinar] = useState<Webinar | null>(null);
-    const [loading, setLoading] = useState(true);
+// Revalidate every hour
+export const revalidate = 3600;
 
-    useSEO({
-        title: webinar
-            ? `${webinar.title} | Rumah Coding`
-            : "Loading... | Rumah Coding",
-        description: webinar?.short_description || "",
-        image: webinar
-            ? webinar.banner_image_url || webinar.card_image_url
-            : undefined,
-        url: window.location.href,
-    });
+interface Props {
+    params: Promise<{
+        slug: string;
+    }>;
+}
 
-    useEffect(() => {
-        const loadWebinar = async () => {
-            if (slug) {
-                const data = await DataService.getWebinarBySlug(slug);
-                setWebinar(data);
-            }
-            setLoading(false);
-        };
-        loadWebinar();
-    }, [slug]);
-
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-white">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-            </div>
-        );
-    }
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { slug } = await params;
+    const webinar = await DataService.getWebinarBySlug(slug);
 
     if (!webinar) {
-        return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-white">
-                <h2 className="text-2xl font-bold mb-4">Webinar Not Found</h2>
-                <Link to="/" className="text-primary-600 hover:underline">
-                    Back to Webinars
-                </Link>
-            </div>
-        );
+        return {
+            title: "Webinar Not Found",
+        };
+    }
+
+    return {
+        title: `${webinar.title} | Rumah Coding`,
+        description: webinar.short_description,
+        openGraph: {
+            title: webinar.title,
+            description: webinar.short_description,
+            images: [webinar.banner_image_url || webinar.card_image_url || ""],
+        },
+        twitter: {
+            card: "summary_large_image",
+            title: webinar.title,
+            description: webinar.short_description,
+            images: [webinar.banner_image_url || webinar.card_image_url || ""],
+        },
+    };
+}
+
+export default async function WebinarDetail({ params }: Props) {
+    const { slug } = await params;
+    const webinar = await DataService.getWebinarBySlug(slug);
+
+    if (!webinar) {
+        notFound();
     }
 
     return (
         <div className="min-h-screen flex flex-col lg:flex-row bg-white relative">
             <Link
-                to="/"
+                href="/"
                 className="absolute top-4 left-4 z-50 p-2 bg-white/10 backdrop-blur-md rounded-full text-white hover:bg-white/20 transition-colors"
             >
                 <ArrowLeft className="w-6 h-6" />
@@ -201,43 +199,7 @@ export default function LandingPage() {
                                 {webinar.speaker_role} at{" "}
                                 {webinar.speaker_company}
                             </p>
-                            {webinar.speaker_social_links && (
-                                <div className="flex items-center space-x-3">
-                                    {webinar.speaker_social_links.map(
-                                        (link, idx) => {
-                                            let Icon = Share2;
-                                            if (link.platform === "LinkedIn")
-                                                Icon = Linkedin;
-                                            else if (
-                                                link.platform === "Facebook"
-                                            )
-                                                Icon = Facebook;
-
-                                            return (
-                                                <a
-                                                    key={idx}
-                                                    href={link.url}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="text-gray-400 hover:text-blue-400 transition-colors"
-                                                    onClick={() =>
-                                                        trackEvent(
-                                                            "social_click",
-                                                            {
-                                                                category:
-                                                                    "Social",
-                                                                label: link.platform,
-                                                            }
-                                                        )
-                                                    }
-                                                >
-                                                    <Icon className="w-4 h-4" />
-                                                </a>
-                                            );
-                                        }
-                                    )}
-                                </div>
-                            )}
+                            {/* Social Links would need Client Component or simple a tags */}
                         </div>
                     </div>
                 </div>

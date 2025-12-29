@@ -1,23 +1,17 @@
+"use client";
+
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { DataService } from "../lib/data";
-import type { WebinarInput } from "../types";
-import { useSEO } from "../hooks/useSEO";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { DataService } from "@/lib/data";
+import type { WebinarInput } from "@/types";
 import { ArrowLeft, Save, Loader2, Plus, Trash2 } from "lucide-react";
 
-export default function AdminWebinarForm() {
-    const { id } = useParams<{ id: string }>();
-    const navigate = useNavigate();
-    const isEditMode = id && id !== "new";
+export default function WebinarEditor({ webinarId }: { webinarId?: string }) {
+    const router = useRouter();
+    const isEditMode = !!webinarId;
     const [loading, setLoading] = useState(isEditMode);
     const [saving, setSaving] = useState(false);
-
-    useSEO({
-        title: isEditMode
-            ? "Edit Webinar | Rumah Coding Admin"
-            : "Create Webinar | Rumah Coding Admin",
-        description: "Create or edit a webinar.",
-    });
 
     const [form, setForm] = useState<WebinarInput>({
         slug: "",
@@ -49,26 +43,21 @@ export default function AdminWebinarForm() {
 
     useEffect(() => {
         const loadWebinar = async () => {
-            if (isEditMode && id) {
-                // Fetch all and find (not efficient but checking logic of data service.. better to add getWebinarById later but for now we can iterate or use slug if known.. wait, data service has getWebinarBySlug. Let's use getWebinars and find for now as ID fetching isn't explicit yet, or add getWebinarById.)
-                // Actually, let's just fetch all and filter in memory since list is small, or assume ID match.
-                // UPDATE: I'll use getWebinars for now as quick fix or add getWebinarById properly?
-                // Let's add getWebinarById to data.ts but for now to be safe with existing tools, I will fetch all.
+            if (isEditMode && webinarId) {
                 const webinars = await DataService.getWebinars();
-                const found = webinars.find((w) => w.id === id);
+                const found = webinars.find((w) => w.id === webinarId);
                 if (found) {
-                    // We need to type cast or ensure types match properly
                     const { id: _, ...rest } = found;
                     setForm(rest);
                 } else {
                     alert("Webinar not found");
-                    navigate("/admin/webinars");
+                    router.push("/admin/webinars");
                 }
                 setLoading(false);
             }
         };
         loadWebinar();
-    }, [id, isEditMode, navigate]);
+    }, [webinarId, isEditMode, router]);
 
     const handleChange = (
         e: React.ChangeEvent<
@@ -125,12 +114,12 @@ export default function AdminWebinarForm() {
         e.preventDefault();
         setSaving(true);
         try {
-            if (isEditMode && id) {
-                await DataService.updateWebinar(id, form);
+            if (isEditMode && webinarId) {
+                await DataService.updateWebinar(webinarId, form);
             } else {
                 await DataService.addWebinar(form);
             }
-            navigate("/admin/webinars");
+            router.push("/admin/webinars");
         } catch (error) {
             console.error(error);
             alert("Failed to save webinar");
@@ -153,7 +142,7 @@ export default function AdminWebinarForm() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                         <Link
-                            to="/admin/webinars"
+                            href="/admin/webinars"
                             className="text-gray-500 hover:text-gray-900 mr-2"
                         >
                             <ArrowLeft className="w-5 h-5" />
