@@ -10,17 +10,9 @@ serve(async (req) => {
         return new Response("ok", { headers: corsHeaders });
     }
 
-    // Manual Authentication Check
-    // We expect the client to send "Bearer <SUPABASE_ANON_KEY>"
-    const authHeader = req.headers.get("Authorization");
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    // Manual Authentication Check Removed
+    // Supabase Gateway already verifies the JWT (Anon Key or User Token)
 
-    if (!authHeader || (anonKey && !authHeader.includes(anonKey))) {
-        return new Response(
-            JSON.stringify({ error: "Unauthorized" }),
-            { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-    }
 
     try {
         const { email, name, webinar } = await req.json();
@@ -36,7 +28,9 @@ serve(async (req) => {
             speaker: webinar?.speaker || "Rumah Coding Team",
             whatsappLink: webinar?.whatsappLink || "https://chat.whatsapp.com/D5RFqx605NHD1DISRGDgNs", // Default fallback
             recordingLink: webinar?.recordingLink,
-            materialLink: webinar?.materialLink
+            materialLink: webinar?.materialLink,
+            date: webinar?.date || "Date to be announced",
+            time: webinar?.time || "Time to be announced"
         };
 
         const htmlContent = `
@@ -69,8 +63,8 @@ serve(async (req) => {
     <body>
         <div class="container">
             <div class="header">
-                <h1>Registration Confirmed</h1>
-                <p>You're all set for the webinar!</p>
+                <h1>${webinarDetails.recordingLink ? 'Recording Access Granted' : 'Registration Confirmed'}</h1>
+                <p>${webinarDetails.recordingLink ? 'Here are the resources you requested' : "You're all set for the webinar!"}</p>
             </div>
             
             <div class="content">
@@ -102,6 +96,11 @@ serve(async (req) => {
                     </div>
                     ` : ''}
                     
+                    <div class="detail-row">
+                        <div class="detail-label">When</div>
+                        <div class="detail-value">${webinarDetails.date}<br>${webinarDetails.time}</div>
+                    </div>
+
                     <div class="detail-row">
                         <div class="detail-label">Speaker</div>
                         <div class="detail-value">${webinarDetails.speaker}</div>
@@ -152,9 +151,11 @@ serve(async (req) => {
                         name: name
                     }
                 ],
-                subject: `Recording Access: ${webinarDetails.title}`,
+                subject: webinarDetails.recordingLink
+                    ? `Recording Access: ${webinarDetails.title}`
+                    : `Registration Confirmed: ${webinarDetails.title}`,
                 html: htmlContent,
-                category: "Recording Access"
+                category: webinarDetails.recordingLink ? "Recording Access" : "Webinar Registration"
             })
         });
 

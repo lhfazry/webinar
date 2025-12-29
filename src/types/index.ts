@@ -37,6 +37,8 @@ export interface WebinarDetails {
     whatsappLink?: string;
     recordingLink?: string;
     materialLink?: string;
+    date: string;
+    time: string;
 }
 
 export type WebinarInput = Omit<Webinar, 'id'>;

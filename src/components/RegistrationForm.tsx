@@ -44,6 +44,16 @@ export function RegistrationForm({
                               whatsappLink: webinar.whatsapp_link,
                               recordingLink: webinar.recording_link,
                               materialLink: webinar.material_link,
+                              date: new Date(webinar.date).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                      weekday: "long",
+                                      year: "numeric",
+                                      month: "long",
+                                      day: "numeric",
+                                  }
+                              ),
+                              time: `${webinar.start_time} - ${webinar.end_time}`,
                           }
                         : undefined
                 );
