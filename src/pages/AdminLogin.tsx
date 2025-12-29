@@ -1,11 +1,17 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Lock } from "lucide-react";
+import { useSEO } from "../hooks/useSEO";
 
 export default function AdminLogin() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const navigate = useNavigate();
+
+    useSEO({
+        title: "Admin Login | Rumah Coding",
+        description: "Login to access the admin dashboard.",
+    });
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();

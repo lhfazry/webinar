@@ -13,6 +13,7 @@ import {
     RefreshCw,
     CheckCircle,
 } from "lucide-react";
+import { useSEO } from "../hooks/useSEO";
 import { DataService } from "../lib/data";
 import { sendConfirmationEmail } from "../lib/email";
 import type { Registration, ReferralSource } from "../types";
@@ -40,6 +41,11 @@ export default function AdminDashboard() {
         jobTitles: Record<string, number>;
         referralSources: Record<string, number>;
     }>({ jobTitles: {}, referralSources: {} });
+
+    useSEO({
+        title: "Admin Dashboard | Rumah Coding",
+        description: "Admin panel for managing webinar registrations.",
+    });
 
     useEffect(() => {
         // Check auth
@@ -373,6 +379,16 @@ export default function AdminDashboard() {
                             Export CSV
                         </button>
                     </div>
+                </div>
+
+                {/* Quick Link to Webinars */}
+                <div className="flex justify-end mb-4">
+                    <button
+                        onClick={() => navigate("/admin/webinars")}
+                        className="flex items-center text-primary-600 hover:text-primary-800 font-medium"
+                    >
+                        Manage Webinars &rarr;
+                    </button>
                 </div>
 
                 {/* Data Table */}

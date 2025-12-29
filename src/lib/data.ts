@@ -1,4 +1,4 @@
-import type { Registration, RegistrationInput } from '../types';
+import type { Registration, RegistrationInput, Webinar, WebinarInput } from '../types';
 
 import { supabase } from './supabase';
 
@@ -10,7 +10,8 @@ export const DataService = {
         limit: number = 10,
         search: string = "",
         filter: string = "All",
-        roleFilter: string = "All"
+        roleFilter: string = "All",
+        webinarId: string = "All"
     ): Promise<{ data: Registration[]; count: number }> => {
         const from = (page - 1) * limit;
         const to = from + limit - 1;
@@ -36,6 +37,10 @@ export const DataService = {
                 query = query.eq("job_title", roleFilter);
             }
 
+            if (webinarId !== "All") {
+                query = query.eq("webinar_id", webinarId);
+            }
+
             const { data, error, count } = await query;
 
             if (error) {
@@ -54,6 +59,7 @@ export const DataService = {
                     referralSource: item.referral_source,
                     createdAt: item.created_at,
                     hasBeenAddedToGoogleContact: item.has_been_added_to_google_contact,
+                    webinarId: item.webinar_id
                 })),
                 count: count || 0,
             };
@@ -84,6 +90,12 @@ export const DataService = {
             );
         }
 
+        if (webinarId !== "All") {
+            registrations = registrations.filter(
+                (r) => r.webinarId === webinarId
+            );
+        }
+
         const totalCount = registrations.length;
         const paginatedData = registrations.slice(from, to + 1);
 
@@ -107,7 +119,8 @@ export const DataService = {
                     job_title: input.jobTitle,
                     institution: input.institution,
                     referral_source: input.referralSource,
-                    created_at: new Date().toISOString()
+                    created_at: new Date().toISOString(),
+                    webinar_id: input.webinarId
                 }])
                 .select()
                 .single();
@@ -125,7 +138,8 @@ export const DataService = {
                 jobTitle: data.job_title,
                 institution: data.institution,
                 referralSource: data.referral_source,
-                createdAt: data.created_at
+                createdAt: data.created_at,
+                webinarId: data.webinar_id
             };
         }
 
@@ -205,4 +219,90 @@ export const DataService = {
         }
         return { error: "Supabase client not initialized" };
     },
+
+    getWebinars: async (): Promise<Webinar[]> => {
+        if (supabase) {
+            const { data, error } = await supabase
+                .from("webinars")
+                .select("*")
+                .order("date", { ascending: true });
+
+            if (error) {
+                console.error("Error fetching webinars:", error);
+                return [];
+            }
+
+            return data || [];
+        }
+        // Fallback or mock data if no supabase
+        return [];
+    },
+
+    getWebinarBySlug: async (slug: string): Promise<Webinar | null> => {
+        if (supabase) {
+            const { data, error } = await supabase
+                .from("webinars")
+                .select("*")
+                .eq("slug", slug)
+                .single();
+
+            if (error) {
+                console.error("Error fetching webinar:", error);
+                return null;
+            }
+
+            return data;
+        }
+        return null;
+        return null;
+    },
+
+    addWebinar: async (input: WebinarInput): Promise<Webinar | null> => {
+        if (supabase) {
+            const { data, error } = await supabase
+                .from("webinars")
+                .insert([input])
+                .select()
+                .single();
+
+            if (error) {
+                console.error("Error adding webinar:", error);
+                throw error;
+            }
+            return data;
+        }
+        return null;
+    },
+
+    updateWebinar: async (id: string, input: WebinarInput): Promise<Webinar | null> => {
+        if (supabase) {
+            const { data, error } = await supabase
+                .from("webinars")
+                .update(input)
+                .eq("id", id)
+                .select()
+                .single();
+
+            if (error) {
+                console.error("Error updating webinar:", error);
+                throw error;
+            }
+            return data;
+        }
+        return null;
+    },
+
+    deleteWebinar: async (id: string): Promise<void> => {
+        if (supabase) {
+            const { error } = await supabase
+                .from("webinars")
+                .delete()
+                .eq("id", id);
+
+            if (error) {
+                console.error("Error deleting webinar:", error);
+                throw error;
+            }
+        }
+    }
 };

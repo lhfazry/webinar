@@ -7,8 +7,10 @@ import type { RegistrationInput } from "../types";
 
 export function RegistrationForm({
     isWaitlist = false,
+    webinarId,
 }: {
     isWaitlist?: boolean;
+    webinarId?: string;
 }) {
     const [formData, setFormData] = useState<RegistrationInput>({
         fullName: "",
@@ -17,6 +19,7 @@ export function RegistrationForm({
         jobTitle: "",
         institution: "",
         referralSource: "LinkedIn",
+        webinarId: webinarId,
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
