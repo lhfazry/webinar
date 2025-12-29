@@ -26,6 +26,17 @@ export interface Webinar {
     speaker_social_links: { platform: string; url: string }[];
     key_takeaways: string[];
     is_finished: boolean;
+    whatsapp_link?: string;
+    recording_link?: string;
+    material_link?: string;
+}
+
+export interface WebinarDetails {
+    title: string;
+    speaker: string;
+    whatsappLink?: string;
+    recordingLink?: string;
+    materialLink?: string;
 }
 
 export type WebinarInput = Omit<Webinar, 'id'>;

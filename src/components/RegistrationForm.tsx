@@ -3,14 +3,14 @@ import { Loader2, CheckCircle2 } from "lucide-react";
 import { DataService } from "../lib/data";
 import { sendConfirmationEmail } from "../lib/email";
 import { trackEvent } from "../lib/analytics";
-import type { RegistrationInput } from "../types";
+import type { RegistrationInput, Webinar } from "../types";
 
 export function RegistrationForm({
     isWaitlist = false,
-    webinarId,
+    webinar,
 }: {
     isWaitlist?: boolean;
-    webinarId?: string;
+    webinar?: Webinar | null;
 }) {
     const [formData, setFormData] = useState<RegistrationInput>({
         fullName: "",
@@ -19,7 +19,7 @@ export function RegistrationForm({
         jobTitle: "",
         institution: "",
         referralSource: "LinkedIn",
-        webinarId: webinarId,
+        webinarId: webinar?.id,
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
@@ -34,7 +34,19 @@ export function RegistrationForm({
             // Send confirmation email (fire and forget or await doesn't matter much here,
             // but we'll await to ensure it fires before unmount if any)
             try {
-                await sendConfirmationEmail(formData.email, formData.fullName);
+                await sendConfirmationEmail(
+                    formData.email,
+                    formData.fullName,
+                    webinar
+                        ? {
+                              title: webinar.title,
+                              speaker: webinar.speaker_name,
+                              whatsappLink: webinar.whatsapp_link,
+                              recordingLink: webinar.recording_link,
+                              materialLink: webinar.material_link,
+                          }
+                        : undefined
+                );
             } catch (emailError) {
                 console.error("Failed to send email silently:", emailError);
                 // Don't fail the registration if email fails

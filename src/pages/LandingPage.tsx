@@ -261,7 +261,7 @@ export default function LandingPage() {
 
                     <RegistrationForm
                         isWaitlist={webinar.is_finished}
-                        webinarId={webinar.id}
+                        webinar={webinar}
                     />
                 </div>
             </div>

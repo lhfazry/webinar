@@ -38,6 +38,9 @@ export default function AdminWebinarForm() {
         speaker_social_links: [],
         key_takeaways: [],
         is_finished: false,
+        whatsapp_link: "",
+        recording_link: "",
+        material_link: "",
     });
 
     const [takeawayInput, setTakeawayInput] = useState("");

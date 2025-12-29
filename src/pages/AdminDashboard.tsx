@@ -16,17 +16,19 @@ import {
 import { useSEO } from "../hooks/useSEO";
 import { DataService } from "../lib/data";
 import { sendConfirmationEmail } from "../lib/email";
-import type { Registration, ReferralSource } from "../types";
+import type { Registration, ReferralSource, Webinar } from "../types";
 
 export default function AdminDashboard() {
     const navigate = useNavigate();
     const [registrations, setRegistrations] = useState<Registration[]>([]);
+    const [webinars, setWebinars] = useState<Webinar[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
     const [filterReferral, setFilterReferral] = useState<
         ReferralSource | "All"
     >("All");
     const [filterRole, setFilterRole] = useState<string>("All");
+    const [filterWebinar, setFilterWebinar] = useState<string>("All");
     const [processingEmailId, setProcessingEmailId] = useState<string | null>(
         null
     );
@@ -68,28 +70,43 @@ export default function AdminDashboard() {
     // Reset pagination when filter changes
     useEffect(() => {
         setCurrentPage(1);
-    }, [filterReferral, filterRole]);
+    }, [filterReferral, filterRole, filterWebinar]);
 
     useEffect(() => {
         loadData();
-    }, [currentPage, debouncedSearchTerm, filterReferral, filterRole]);
+    }, [
+        currentPage,
+        debouncedSearchTerm,
+        filterReferral,
+        filterRole,
+        filterWebinar,
+    ]);
 
     const loadData = async () => {
         // Parallel data fetching for efficiency
-        const [registrationsResponse, statsResponse] = await Promise.all([
-            DataService.getRegistrations(
-                currentPage,
-                itemsPerPage,
-                debouncedSearchTerm,
-                filterReferral,
-                filterRole
-            ),
-            DataService.getStatistics(),
-        ]);
+        const [registrationsResponse, statsResponse, webinarsResponse] =
+            await Promise.all([
+                DataService.getRegistrations(
+                    currentPage,
+                    itemsPerPage,
+                    debouncedSearchTerm,
+                    filterReferral,
+                    filterRole,
+                    filterWebinar
+                ),
+                DataService.getStatistics(
+                    debouncedSearchTerm,
+                    filterReferral,
+                    filterRole,
+                    filterWebinar
+                ),
+                DataService.getWebinars(),
+            ]);
 
         setRegistrations(registrationsResponse.data);
         setTotalItems(registrationsResponse.count);
         setStatistics(statsResponse);
+        setWebinars(webinarsResponse);
     };
 
     const handleLogout = () => {
@@ -202,13 +219,21 @@ export default function AdminDashboard() {
                             Admin Dashboard
                         </h1>
                     </div>
-                    <button
-                        onClick={handleLogout}
-                        className="flex items-center text-gray-600 hover:text-red-600 transition-colors"
-                    >
-                        <LogOut className="w-5 h-5 mr-2" />
-                        Logout
-                    </button>
+                    <div className="flex items-center space-x-4">
+                        <button
+                            onClick={() => navigate("/admin/webinars")}
+                            className="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors"
+                        >
+                            Manage Webinars
+                        </button>
+                        <button
+                            onClick={handleLogout}
+                            className="flex items-center text-gray-600 hover:text-red-600 transition-colors"
+                        >
+                            <LogOut className="w-5 h-5 mr-2" />
+                            Logout
+                        </button>
+                    </div>
                 </div>
             </header>
 
@@ -316,6 +341,24 @@ export default function AdminDashboard() {
                             <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                             <select
                                 className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none appearance-none bg-white w-full sm:w-48"
+                                value={filterWebinar}
+                                onChange={(e) =>
+                                    setFilterWebinar(e.target.value)
+                                }
+                            >
+                                <option value="All">All Webinars</option>
+                                {webinars.map((webinar) => (
+                                    <option key={webinar.id} value={webinar.id}>
+                                        {webinar.title}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="relative">
+                            <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                            <select
+                                className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none appearance-none bg-white w-full sm:w-48"
                                 value={filterRole}
                                 onChange={(e) => setFilterRole(e.target.value)}
                             >
@@ -379,16 +422,6 @@ export default function AdminDashboard() {
                             Export CSV
                         </button>
                     </div>
-                </div>
-
-                {/* Quick Link to Webinars */}
-                <div className="flex justify-end mb-4">
-                    <button
-                        onClick={() => navigate("/admin/webinars")}
-                        className="flex items-center text-primary-600 hover:text-primary-800 font-medium"
-                    >
-                        Manage Webinars &rarr;
-                    </button>
                 </div>
 
                 {/* Data Table */}

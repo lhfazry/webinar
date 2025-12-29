@@ -23,7 +23,7 @@ serve(async (req) => {
     }
 
     try {
-        const { email, name } = await req.json();
+        const { email, name, webinar } = await req.json();
         const token = Deno.env.get("MAILTRAP_API_TOKEN");
         const senderEmail = Deno.env.get("MAILTRAP_SENDER_EMAIL") || "hello@demomailtrap.com";
 
@@ -32,11 +32,11 @@ serve(async (req) => {
         }
 
         const webinarDetails = {
-            title: "ViT vs CNN: The Clash of Architectures",
-            speaker: "Lhuqita Fazry",
-            whatsappLink: "https://chat.whatsapp.com/D5RFqx605NHD1DISRGDgNs",
-            recordingLink: "https://youtu.be/qYBmiQ-TEWk",
-            materialLink: "https://github.com/lhfazry/vit-vs-cnn"
+            title: webinar?.title || "Upcoming Webinar",
+            speaker: webinar?.speaker || "Rumah Coding Team",
+            whatsappLink: webinar?.whatsappLink || "https://chat.whatsapp.com/D5RFqx605NHD1DISRGDgNs", // Default fallback
+            recordingLink: webinar?.recordingLink,
+            materialLink: webinar?.materialLink
         };
 
         const htmlContent = `
@@ -45,7 +45,7 @@ serve(async (req) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>You're on the waitlist & Recording Access</title>
+        <title>Webinar Registration Confirmed</title>
         <style>
             body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f3f4f6; color: #1f2937; line-height: 1.6; }
             .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-top: 40px; margin-bottom: 40px; }
@@ -69,49 +69,66 @@ serve(async (req) => {
     <body>
         <div class="container">
             <div class="header">
-                <h1>Recording Access & Waitlist</h1>
-                <p>Catch up on what you missed</p>
+                <h1>Registration Confirmed</h1>
+                <p>You're all set for the webinar!</p>
             </div>
             
             <div class="content">
                 <p class="greeting">Hi ${name},</p>
-                <p>Thanks for your interest in "<strong>${webinarDetails.title}</strong>". The live session has concluded, but we have good news!</p>
-                <p>You can access the recording and materials here:</p>
+                <p>Thanks for registering for "<strong>${webinarDetails.title}</strong>" with ${webinarDetails.speaker}.</p>
+                
+                ${webinarDetails.recordingLink ? `
+                <p>Since this event has ended, you can access the recording and materials below:</p>
+                ` : `
+                <p>We've received your registration. To stay updated and get the link to join, please join our WhatsApp group.</p>
+                `}
                 
                 <div class="card">
+                     ${webinarDetails.recordingLink ? `
                      <div class="detail-row">
                         <div class="detail-label">Recording</div>
                         <div class="detail-value">
                             <a href="${webinarDetails.recordingLink}" style="color: #4f46e5;">Watch on YouTube</a>
                         </div>
                     </div>
+                    ` : ''}
+                    
+                    ${webinarDetails.materialLink ? `
                     <div class="detail-row">
                         <div class="detail-label">Materials</div>
                         <div class="detail-value">
-                            <a href="${webinarDetails.materialLink}" style="color: #4f46e5;">Access on GitHub</a>
+                            <a href="${webinarDetails.materialLink}" style="color: #4f46e5;">Access Materials</a>
                         </div>
+                    </div>
+                    ` : ''}
+                    
+                    <div class="detail-row">
+                        <div class="detail-label">Speaker</div>
+                        <div class="detail-value">${webinarDetails.speaker}</div>
                     </div>
                 </div>
 
-                <p>We have also added you to our priority notification list for the next technical deep dive.</p>
-                
                 <p style="text-align: center; margin-bottom: 16px; color: #4b5563;">
-                    Join our community to discuss the webinar materials with other engineers.
+                    Join our community to discuss the webinar topics with other engineers.
                 </p>
                 
+                ${webinarDetails.whatsappLink ? `
                 <div class="cta-section">
                     <a href="${webinarDetails.whatsappLink}" class="button">Join WhatsApp Group</a>
                 </div>
+                ` : ''}
 
+                ${webinarDetails.whatsappLink ? `
                 <p style="font-size: 14px; text-align: center; color: #9ca3af;">
                     If the button doesn't work, you can copy this link:<br>
                     <a href="${webinarDetails.whatsappLink}" style="color: #4f46e5; word-break: break-all;">${webinarDetails.whatsappLink}</a>
                 </p>
+                ` : ''}
             </div>
             
             <div class="footer">
                 <p>&copy; 2025 Rumah Coding. All rights reserved.</p>
-                <p>You received this email because you requested access to the webinar recording.</p>
+                <p>You received this email because you registered for a webinar at Rumah Coding.</p>
             </div>
         </div>
     </body>

@@ -169,16 +169,48 @@ export const DataService = {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
     },
 
-    getStatistics: async (): Promise<{
+    getStatistics: async (
+        search: string = "",
+        filter: string = "All",
+        roleFilter: string = "All",
+        webinarId: string = "All"
+    ): Promise<{
         jobTitles: Record<string, number>;
         referralSources: Record<string, number>;
     }> => {
         let registrations: any[] = [];
 
         if (supabase) {
-            const { data, error } = await supabase
+            let query = supabase
                 .from("registrations")
-                .select("job_title, referral_source");
+                .select("job_title, referral_source"); // Need to check if we need other columns for filtering? YES.
+            // Actually to filter we need to select columns we filter on OR use .select() with filtering
+            // But typically for filtering we add .eq() etc.
+
+            // Re-constructing query properly
+            let statsQuery = supabase
+                .from("registrations")
+                .select("job_title, referral_source, full_name, email, webinar_id");
+
+            if (search) {
+                statsQuery = statsQuery.or(
+                    `full_name.ilike.%${search}%,email.ilike.%${search}%`
+                );
+            }
+
+            if (filter !== "All") {
+                statsQuery = statsQuery.eq("referral_source", filter);
+            }
+
+            if (roleFilter !== "All") {
+                statsQuery = statsQuery.eq("job_title", roleFilter);
+            }
+
+            if (webinarId !== "All") {
+                statsQuery = statsQuery.eq("webinar_id", webinarId);
+            }
+
+            const { data, error } = await statsQuery;
 
             if (error) {
                 console.error("Error fetching statistics:", error);
@@ -188,6 +220,34 @@ export const DataService = {
         } else {
             const data = localStorage.getItem(STORAGE_KEY);
             registrations = data ? JSON.parse(data) : [];
+
+            // Apply Filters for LocalStorage
+            if (search) {
+                const lowerSearch = search.toLowerCase();
+                registrations = registrations.filter(
+                    (r) =>
+                        (r.fullName || r.full_name || "").toLowerCase().includes(lowerSearch) ||
+                        (r.email || "").toLowerCase().includes(lowerSearch)
+                );
+            }
+
+            if (filter !== "All") {
+                registrations = registrations.filter(
+                    (r) => (r.referralSource || r.referral_source) === filter
+                );
+            }
+
+            if (roleFilter !== "All") {
+                registrations = registrations.filter(
+                    (r) => (r.jobTitle || r.job_title) === roleFilter
+                );
+            }
+
+            if (webinarId !== "All") {
+                registrations = registrations.filter(
+                    (r) => (r.webinarId || r.webinar_id) === webinarId
+                );
+            }
         }
 
         const jobTitles: Record<string, number> = {};
