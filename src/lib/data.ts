@@ -181,11 +181,7 @@ export const DataService = {
         let registrations: any[] = [];
 
         if (supabase) {
-            let query = supabase
-                .from("registrations")
-                .select("job_title, referral_source"); // Need to check if we need other columns for filtering? YES.
-            // Actually to filter we need to select columns we filter on OR use .select() with filtering
-            // But typically for filtering we add .eq() etc.
+
 
             // Re-constructing query properly
             let statsQuery = supabase
