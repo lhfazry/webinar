@@ -67,6 +67,8 @@ export function RegistrationForm({
                 category: "Registration",
                 label: formData.jobTitle,
                 value: 1,
+                webinar_id: webinar?.id,
+                webinar_title: webinar?.title,
             });
         } catch (error) {
             console.error("Registration failed:", error);
