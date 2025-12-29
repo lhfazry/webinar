@@ -225,7 +225,7 @@ export const DataService = {
             const { data, error } = await supabase
                 .from("webinars")
                 .select("*")
-                .order("date", { ascending: true });
+                .order("date", { ascending: false });
 
             if (error) {
                 console.error("Error fetching webinars:", error);
