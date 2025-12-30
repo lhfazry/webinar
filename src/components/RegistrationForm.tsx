@@ -211,9 +211,8 @@ export function RegistrationForm({
                         <option value="Software Engineer">
                             Software Engineer
                         </option>
-                        <option value="Student / Researcher">
-                            Student / Researcher
-                        </option>
+                        <option value="Researcher">Researcher</option>
+                        <option value="Student">Student</option>
                         <option value="Other">Other</option>
                     </select>
                 </div>
