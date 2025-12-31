@@ -14,6 +14,8 @@ import {
     ChevronRight,
     RefreshCw,
     CheckCircle,
+    RotateCw,
+    Contact,
 } from "lucide-react";
 import { DataService } from "@/lib/data";
 import { sendConfirmationEmail } from "@/lib/email";
@@ -45,6 +47,7 @@ export default function AdminDashboard() {
         referralSources: Record<string, number>;
     }>({ jobTitles: {}, referralSources: {} });
     const [isAuthChecking, setIsAuthChecking] = useState(true);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
     useEffect(() => {
         // Check auth
@@ -105,6 +108,13 @@ export default function AdminDashboard() {
         setTotalItems(registrationsResponse.count);
         setStatistics(statsResponse);
         setWebinars(webinarsResponse);
+    };
+
+    const handleRefresh = async () => {
+        setIsRefreshing(true);
+        await loadData();
+        // Add a small delay for better UX if the request is too fast
+        setTimeout(() => setIsRefreshing(false), 500);
     };
 
     const handleLogout = () => {
@@ -403,18 +413,34 @@ export default function AdminDashboard() {
 
                     <div className="flex space-x-2 w-full sm:w-auto">
                         <button
+                            onClick={handleRefresh}
+                            disabled={isRefreshing}
+                            className={`flex items-center p-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors justify-center ${
+                                isRefreshing
+                                    ? "opacity-50 cursor-not-allowed"
+                                    : ""
+                            }`}
+                            title="Refresh Data"
+                        >
+                            <RotateCw
+                                className={`w-4 h-4 ${
+                                    isRefreshing ? "animate-spin" : ""
+                                }`}
+                            />
+                        </button>
+                        <button
                             onClick={handleSync}
                             disabled={isSyncing}
-                            className={`flex items-center px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors w-full sm:w-auto justify-center ${
+                            className={`flex items-center p-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors justify-center ${
                                 isSyncing ? "opacity-50 cursor-not-allowed" : ""
                             }`}
+                            title="Sync Google Contacts"
                         >
-                            <RefreshCw
-                                className={`w-4 h-4 mr-2 ${
+                            <Contact
+                                className={`w-4 h-4 ${
                                     isSyncing ? "animate-spin" : ""
                                 }`}
                             />
-                            {isSyncing ? "Syncing..." : "Sync Contacts"}
                         </button>
                         <button
                             onClick={handleExport}
